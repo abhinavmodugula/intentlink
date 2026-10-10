@@ -40,22 +40,6 @@ real `/dp/<ASIN>` URL you have open.
 https://www.amazon.com/dp/B0F8MHPVPH#ll-intent=Quiet%20standing%20desk%2C%20stable%20at%20full%20height%2C%2048%20inches%20wide
 ```
 
-## Walmart: shoes (search)
-
-> Comfortable running shoes for flat feet, under $60, good arch support
-
-```
-https://www.walmart.com/search?q=shoes&action=SignIn&rm=true#ll-intent=Comfortable%20running%20shoes%20for%20flat%20feet%2C%20under%20%2460%2C%20good%20arch%20support
-```
-
-## Walmart: Avia sneakers (product page)
-
-> Lightweight athletic sneakers for all-day standing at work, breathable, under $40
-
-```
-https://www.walmart.com/ip/Avia-Men-s-5000-Athletic-Performance-Sneakers/15106815936?classType=VARIANT&athbdg=L1600&from=/search#ll-intent=Lightweight%20athletic%20sneakers%20for%20all-day%20standing%20at%20work%2C%20breathable%2C%20under%20%2440
-```
-
 ## Uniqlo: mens shirts (search)
 
 > Comfortable mens shirts for everyday wear, soft breathable fabric, relaxed fit
