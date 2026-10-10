@@ -9,7 +9,13 @@
 // directly, so a single call doubles as both the keep/dim decision and the highlight strength.
 (function (global) {
   const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
-  const KEEP_THRESHOLD = 0.5; // below this, item is dimmed; 0.5-0.8 is a "maybe" ring, >0.8 full keep
+  // Below this, item is dimmed; threshold-0.8 is a "maybe" ring, >0.8 full keep. Lowered from 0.5
+  // after observing real call-to-call variance on compound intents — e.g. a fact explicitly named
+  // in the intent scored 0.05 on one call and 0.41 on a re-run of the same request. 0.5 was
+  // dropping genuinely-matching facts; this isn't a perfect fix for the underlying variance, but
+  // it catches more of the "good" calls without re-admitting clearly-irrelevant items (those
+  // scored 0.02-0.09 in the same log, well under this threshold either way).
+  const KEEP_THRESHOLD = 0.3;
 
   async function jev(intent, items, context = {}) {
     const apiKey = global.LL_CONFIG && global.LL_CONFIG.JEV_API_KEY;
@@ -19,8 +25,14 @@
 
     const questions = {};
     for (const it of items) {
+      // Product mode: a compound intent ("A, B, and C") means any single fact can only ever
+      // support one clause of it — asking whether a fact is "strong evidence of the full match"
+      // (the original phrasing) systematically undersells facts that answer just one clause,
+      // even when it's exactly what was asked for. Asking about relevance to ANY part of the
+      // intent instead scores those facts more consistently without losing the ability to reject
+      // genuinely irrelevant ones (an EV-charging tag still won't be "relevant" to a kitchen ask).
       const instructions = isProduct
-        ? `Is this product fact strong evidence that the product matches the shopper's intent: "${intent}"? Fact: "${it.title}"`
+        ? `Is this fact relevant to anything the shopper is looking for? Shopper's request: "${intent}" Fact: "${it.title}"`
         : `Does this item ("${it.title}", $${it.price}${it.rating != null ? `, ${it.rating}★` : ""}${it.prime ? ", Prime" : ""}) match the shopper's intent: "${intent}"?`;
       questions[it.id] = { type: "noul", instructions };
     }
