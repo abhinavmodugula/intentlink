@@ -62,10 +62,11 @@ function reCheckPlan(plan, items) {
   return { ...plan, keep };
 }
 
-async function rank(intent, items, pageUrl) {
-  const cacheKey = hashKey(intent + "|" + stripHash(pageUrl || ""));
+async function rank(intent, items, pageUrl, pageType) {
+  const cacheKey = hashKey(intent + "|" + stripHash(pageUrl || "") + "|" + (pageType || "search"));
   const config = self.LL_CONFIG || { RANK_ENGINE: "heuristic", DEMO_MODE: false };
-  console.log(`IntentLink: rank() intent="${intent}" items=${items.length} engine=${config.RANK_ENGINE} demoMode=${config.DEMO_MODE}`);
+  const context = { pageType: pageType || "search" };
+  console.log(`IntentLink: rank() intent="${intent}" items=${items.length} pageType=${context.pageType} engine=${config.RANK_ENGINE} demoMode=${config.DEMO_MODE}`);
 
   if (config.DEMO_MODE) {
     if (replayCache.has(cacheKey)) {
@@ -73,7 +74,7 @@ async function rank(intent, items, pageUrl) {
       return replayCache.get(cacheKey);
     }
     // Demo mode never touches the network — heuristic is pure JS.
-    const plan = reCheckPlan(await self.LL_ENGINES.heuristic(intent, items), items);
+    const plan = reCheckPlan(await self.LL_ENGINES.heuristic(intent, items, context), items);
     replayCache.set(cacheKey, plan);
     return plan;
   }
@@ -89,11 +90,11 @@ async function rank(intent, items, pageUrl) {
   const t0 = performance.now();
   let plan;
   try {
-    plan = await withTimeout(engine(intent, items), RANK_TIMEOUT_MS);
+    plan = await withTimeout(engine(intent, items, context), RANK_TIMEOUT_MS);
     console.log(`IntentLink: ${engineName} engine succeeded in ${Math.round(performance.now() - t0)}ms`);
   } catch (err) {
     console.warn(`IntentLink: ${engineName} engine failed after ${Math.round(performance.now() - t0)}ms (${err.message}), falling back to heuristic`);
-    plan = await self.LL_ENGINES.heuristic(intent, items);
+    plan = await self.LL_ENGINES.heuristic(intent, items, context);
   }
 
   plan = reCheckPlan(plan, items);
@@ -104,7 +105,7 @@ async function rank(intent, items, pageUrl) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "rank") {
-    rank(message.intent, message.items, sender.tab?.url)
+    rank(message.intent, message.items, sender.tab?.url, message.pageType)
       .then((plan) => sendResponse({ ok: true, plan }))
       .catch((err) => sendResponse({ ok: false, error: String(err) }));
     return true; // async response

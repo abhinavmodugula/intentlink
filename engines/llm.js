@@ -1,10 +1,10 @@
 // Default rank engine: DeepSeek (OpenAI-compatible chat/completions, JSON mode).
-// Implements rank(intent, items) -> {filters, summary, keep:[{id, reason, score}]}.
+// Implements rank(intent, items, context) -> {filters, summary, keep:[{id, reason, score}]}.
 // Any thrown error is caught by background.js, which falls back to the heuristic engine.
 (function (global) {
   const ENDPOINT = "https://api.deepseek.com/chat/completions";
 
-  const SYSTEM_PROMPT = `You rank shopping search results against a shopper's stated intent.
+  const SYSTEM_PROMPT_SEARCH = `You rank shopping search results against a shopper's stated intent.
 Return strict JSON only, matching this schema exactly:
 {"filters":{"priceMax":number|null,"ratingMin":number|null,"prime":boolean|null},
  "summary":"string, e.g. '4 of 48 match: under $100, 4★+, Prime'",
@@ -15,13 +15,32 @@ Rules:
 - Never include an id whose price exceeds a stated priceMax, or whose rating is below a stated ratingMin.
 - Output the JSON object only, no other text.`;
 
-  async function llm(intent, items) {
+  // Product-detail mode: the items are facts about ONE product (feature bullets, spec rows,
+  // review snippets), not competing products — the job is picking evidence, not filtering a list.
+  const SYSTEM_PROMPT_PRODUCT = `You pick which facts about a single product are evidence that it matches a shopper's stated intent.
+You are given facts extracted from one product's page (feature bullets, spec rows, review
+snippets) — not a list of competing products.
+Return strict JSON only, matching this schema exactly:
+{"filters":null,
+ "summary":"string, a short phrase naming the supporting facts, e.g. 'whisper-quiet dual motors, anti-wobble steel frame, 48in wide'",
+ "keep":[{"id":"string, must be one of the given item ids","reason":"short phrase quoting or paraphrasing the specific detail"}]}
+Rules:
+- Only include ids that are genuine supporting evidence for the stated intent.
+- Leave out facts with no bearing on the intent (warranty, color options, shipping, unrelated specs).
+- "summary" must not start with "Recommended because" — the caller adds that prefix.
+- Output the JSON object only, no other text.`;
+
+  async function llm(intent, items, context = {}) {
     const apiKey = global.LL_CONFIG && global.LL_CONFIG.DEEPSEEK_API_KEY;
     if (!apiKey) throw new Error("llm engine: missing DEEPSEEK_API_KEY");
+
+    const isProduct = context.pageType === "product";
+    const systemPrompt = isProduct ? SYSTEM_PROMPT_PRODUCT : SYSTEM_PROMPT_SEARCH;
 
     const compactItems = items.map((it) => ({
       id: it.id,
       title: it.title,
+      kind: it.kind,
       price: it.price,
       rating: it.rating,
       reviewCount: it.reviewCount,
@@ -34,7 +53,7 @@ Rules:
       temperature: 0,
       max_tokens: 1200, // bounds JSON-mode output; ~30 items of short reasons fits comfortably
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: JSON.stringify({ intent, items: compactItems }) },
       ],
     };

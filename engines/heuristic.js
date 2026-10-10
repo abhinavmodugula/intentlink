@@ -1,8 +1,9 @@
 // Pure-JS rank engine: no network call. Used as the 4s-timeout / offline / DEMO_MODE fallback,
-// and usable directly via RANK_ENGINE="heuristic". Implements the same rank(intent, items) contract
-// as engines/llm.js and engines/jev.js.
+// and usable directly via RANK_ENGINE="heuristic". Implements the same rank(intent, items, context)
+// contract as engines/llm.js and engines/jev.js. Keyword matching already runs on item.title text,
+// so context (pageType) doesn't change behavior here — it's accepted for signature parity only.
 (function (global) {
-  async function heuristic(intent, items) {
+  async function heuristic(intent, items, _context) {
     const filters = global.LL_FILTERS.parseConstraints(intent);
     const words = global.LL_FILTERS.keywordWords(intent);
 

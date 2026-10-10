@@ -34,6 +34,8 @@ bullets / spec rows / review snippets that are the evidence this product matches
 intent, dims the rest, and pins a "Recommended because: …" card at the top. Swap in any
 real `/dp/<ASIN>` URL you have open.
 
+[Open on Amazon, shaped for you](https://www.amazon.com/dp/B0F8MHPVPH#ll-intent=Quiet%20standing%20desk%2C%20stable%20at%20full%20height%2C%2048%20inches%20wide)
+
 ```
 https://www.amazon.com/dp/B0F8MHPVPH#ll-intent=Quiet%20standing%20desk%2C%20stable%20at%20full%20height%2C%2048%20inches%20wide
 ```

@@ -3,7 +3,7 @@
 // (aside from reordering a kept item to the front) is never rewritten, so a failure leaves the
 // normal page behind.
 (function () {
-  const CLASS_NAMES = ["ll-keep", "ll-dim", "ll-hide", "ll-pending", "ll-maybe", "ll-promote"];
+  const CLASS_NAMES = ["ll-keep", "ll-dim", "ll-hide", "ll-pending", "ll-maybe", "ll-promote", "ll-best"];
 
   const state = {
     intent: null,
@@ -12,6 +12,8 @@
     container: null,
     startTime: 0,
     bar: null,
+    answer: null,
+    pageType: "search",
   };
 
   function decodeIntentFromHash(hash) {
@@ -43,10 +45,52 @@
     node.appendChild(chip);
   }
 
+  function removeBestBadge(node) {
+    const badge = node.querySelector(":scope > .ll-best-badge");
+    if (badge) badge.remove();
+  }
+
+  function addBestBadge(node) {
+    removeBestBadge(node);
+    const badge = document.createElement("div");
+    badge.className = "ll-best-badge";
+    badge.textContent = "★ Best match";
+    node.prepend(badge);
+  }
+
+  // Product-page declutter (F7, product mode only): rather than enumerate every noisy Amazon
+  // module by id (brittle — Amazon adds/renames/A-B-tests these constantly), hide every
+  // "*_feature_div" module page-wide EXCEPT ones that hold something that must stay visible:
+  // an extracted fact (tagged data-ll-id by the adapter), the image gallery, the buy box, or
+  // the title. Containment-based in both directions (closest = is-it-inside-one,
+  // querySelector = does-it-contain-one) so it holds regardless of the exact wrapper ids
+  // Amazon's current A/B-tested layout uses. Re-run every pass so a container that gains
+  // protected content later (e.g. reviews lazy-loading in) un-hides instead of staying hidden.
+  const PRODUCT_NEVER_HIDE_SELECTOR = [
+    "[data-ll-id]",
+    "#imageBlock_feature_div",
+    "#imgTagWrapperId",
+    "#altImages",
+    "#rightCol",
+    "#buybox_feature_div",
+    "#addToCart_feature_div",
+    "#title_feature_div",
+  ].join(", ");
+
+  function hideNonEssentialProductModules() {
+    document.querySelectorAll('[id$="_feature_div"]').forEach((node) => {
+      const protect = node.closest(PRODUCT_NEVER_HIDE_SELECTOR) || node.querySelector(PRODUCT_NEVER_HIDE_SELECTOR);
+      node.classList.toggle("ll-hide", !protect);
+    });
+  }
+
   function hideClutter() {
     if (!window.LL_ADAPTER) return;
     for (const sel of window.LL_ADAPTER.clutterSelectors) {
       document.querySelectorAll(sel).forEach((node) => node.classList.add("ll-hide"));
+    }
+    if (state.pageType === "product") {
+      hideNonEssentialProductModules();
     }
   }
 
@@ -56,19 +100,25 @@
     const filters = window.LL_FILTERS.parseConstraints(intent);
     hideClutter();
 
+    // On a product page there's no "list" to preserve for context — a fact that fails pass 1
+    // is just noise, so it's fully hidden rather than dimmed. Search keeps dimming (ll-dim) so
+    // the filtered-out results stay visible for context.
+    const failClass = state.pageType === "product" ? "ll-hide" : "ll-dim";
+
     let pendingCount = 0;
     for (const item of items) {
       const node = state.nodesById.get(item.id);
       if (!node) continue;
       clearLLClasses(node);
       removeChip(node);
+      removeBestBadge(node);
 
       if (item.sponsored) {
         node.classList.add("ll-hide");
         continue;
       }
       if (!window.LL_FILTERS.passesFilters(item, filters)) {
-        node.classList.add("ll-dim");
+        node.classList.add(failClass);
         continue;
       }
       node.classList.add("ll-pending");
@@ -79,35 +129,64 @@
   }
 
   // Pass 2 (F7): settles every pending item into keep / maybe / dim once rank() returns.
+  // Exactly one item (the highest-scoring kept item, if any) gets the "Best match" badge —
+  // this never overrides F6: a best match can only be chosen from items the plan already kept,
+  // so it can never be something that violates a stated filter.
   function applyPass2(plan) {
     const keepMap = new Map(plan.keep.map((k) => [k.id, k]));
     const keptNodesInOrder = [];
+
+    let bestId = null;
+    let bestScore = -Infinity;
+    for (const k of plan.keep) {
+      const score = typeof k.score === "number" ? k.score : 1;
+      if (score > bestScore) {
+        bestScore = score;
+        bestId = k.id;
+      }
+    }
 
     for (const item of state.items) {
       const node = state.nodesById.get(item.id);
       if (!node || item.sponsored) continue; // sponsored stays ll-hide regardless of the plan
 
       const kept = keepMap.get(item.id);
-      node.classList.remove("ll-pending", "ll-dim", "ll-keep", "ll-maybe");
+      node.classList.remove("ll-pending", "ll-dim", "ll-hide", "ll-keep", "ll-maybe", "ll-best");
       removeChip(node);
+      removeBestBadge(node);
 
       if (!kept) {
-        node.classList.add("ll-dim");
+        // Product pages: only the relevant facts should remain — hide the rest outright rather
+        // than dim them. Search keeps dimming so filtered-out results stay visible for context.
+        node.classList.add(state.pageType === "product" ? "ll-hide" : "ll-dim");
         continue;
       }
 
       const score = typeof kept.score === "number" ? kept.score : 1;
-      if (score >= 0.8) {
-        node.classList.add("ll-keep");
-        keptNodesInOrder.push(node);
-      } else {
-        node.classList.add("ll-maybe");
-        keptNodesInOrder.push(node);
-      }
+      node.classList.add(score >= 0.8 ? "ll-keep" : "ll-maybe");
+      keptNodesInOrder.push(node);
       addChip(node, kept.reason);
+
+      if (item.id === bestId) {
+        node.classList.add("ll-best");
+        addBestBadge(node);
+      }
     }
 
-    promoteKept(keptNodesInOrder);
+    // Lead the promoted group with the best match, if there is one.
+    if (bestId) {
+      const bestNode = state.nodesById.get(bestId);
+      const idx = keptNodesInOrder.indexOf(bestNode);
+      if (idx > 0) {
+        keptNodesInOrder.splice(idx, 1);
+        keptNodesInOrder.unshift(bestNode);
+      }
+    }
+
+    // A product page has no list to reorder — facts stay exactly where they are on the page.
+    if (window.LL_ADAPTER.promote !== false) {
+      promoteKept(keptNodesInOrder);
+    }
   }
 
   // Best-effort "promote" op: bubble kept items to the front of their shared parent, preserving
@@ -163,9 +242,34 @@
     state.bar.querySelector(".ll-latency").textContent = `${Math.round(ms)} ms`;
   }
 
+  // Pinned "Recommended because: …" card, product pages only — there's one product, so the
+  // useful summary is the evidence for it, not a match count.
+  function setAnswerCard(text) {
+    if (state.pageType !== "product") return;
+    if (!text) {
+      if (state.answer) {
+        state.answer.remove();
+        state.answer = null;
+      }
+      return;
+    }
+    if (!state.answer) {
+      state.answer = document.createElement("div");
+      state.answer.id = "ll-answer";
+      if (state.bar) state.bar.insertAdjacentElement("afterend", state.answer);
+      else document.body.prepend(state.answer);
+    }
+    state.answer.textContent = `Recommended because: ${text}`;
+  }
+
   async function runRank(intent, items) {
     try {
-      const res = await chrome.runtime.sendMessage({ type: "rank", intent, items });
+      const res = await chrome.runtime.sendMessage({
+        type: "rank",
+        intent,
+        items,
+        pageType: state.pageType,
+      });
       if (!res?.ok) throw new Error(res?.error || "rank failed");
       return res.plan;
     } catch (e) {
@@ -180,7 +284,9 @@
 
     const { pendingCount } = applyPass1(intent, state.items);
     setSummary(
-      `${pendingCount} of ${state.items.length} match the filters · refining…`,
+      state.pageType === "product"
+        ? "Finding why this was recommended…"
+        : `${pendingCount} of ${state.items.length} match the filters · refining…`,
       { spinner: true }
     );
 
@@ -193,6 +299,7 @@
 
     applyPass2(plan);
     setSummary(plan.summary || "");
+    setAnswerCard(plan.summary || "");
     setLatency(performance.now() - state.startTime);
   }
 
@@ -205,33 +312,85 @@
     for (const node of state.nodesById.values()) {
       clearLLClasses(node);
       removeChip(node);
+      removeBestBadge(node);
     }
     // Clutter nodes (sponsored results, carousels) aren't in nodesById — sweep them separately.
     document.querySelectorAll(".ll-hide").forEach((n) => n.classList.remove("ll-hide"));
+    if (state.answer) {
+      state.answer.remove();
+      state.answer = null;
+    }
     if (state.bar) {
       state.bar.remove();
       state.bar = null;
     }
   }
 
+  // Reviews are often lazy-loaded and absent at document_idle. Best-effort only: give the review
+  // list ~2s to render, re-extract once, and fold any new facts into the running reshape. Absence
+  // never blocks or breaks the bullet/spec reshape.
+  function watchForLazyReviews() {
+    if (state.pageType !== "product") return;
+    const adapter = window.LL_ADAPTER;
+    if (!adapter || typeof adapter.extractReviews !== "function") return;
+
+    const container = document.querySelector("#cm-cr-dp-review-list");
+    if (!container) return;
+
+    const timer = setTimeout(() => observer.disconnect(), 2000);
+    const observer = new MutationObserver(() => {
+      const extra = [];
+      adapter.extractReviews(extra);
+      if (!extra.length) return;
+
+      clearTimeout(timer);
+      observer.disconnect();
+      for (const item of extra) {
+        state.items.push(item);
+        state.nodesById.set(item.id, document.querySelector(`[data-ll-id="${item.id}"]`));
+      }
+      runReshape(state.intent);
+    });
+    observer.observe(container, { childList: true, subtree: true });
+  }
+
   async function init() {
     let intent = decodeIntentFromHash(location.hash);
+    console.log(`IntentLink: location.hash at document_idle = "${location.hash}" -> intent ${intent ? "FOUND directly" : "not found"}`);
 
     if (!intent) {
       // F3 backup: a redirect may have dropped the fragment before this script ever saw it.
       try {
         const res = await chrome.runtime.sendMessage({ type: "getCapturedIntent" });
         intent = res?.intent || null;
-      } catch {
-        // no background available / no capture — fall through to "do nothing"
+        console.log(`IntentLink: getCapturedIntent fallback -> ${intent ? `FOUND: "${intent}"` : "nothing captured"}`);
+      } catch (e) {
+        console.warn("IntentLink: getCapturedIntent message failed", e);
       }
     }
 
-    if (!intent) return; // F2: pages without an intent are left untouched
-    if (!window.LL_ADAPTER) return; // no adapter for this domain
+    if (!intent) {
+      console.warn("IntentLink: no intent found via hash or capture fallback — doing nothing on this page");
+      return; // F2: pages without an intent are left untouched
+    }
+    if (!window.LL_ADAPTER) {
+      console.warn("IntentLink: intent found but no adapter registered window.LL_ADAPTER for this page");
+      return; // no adapter for this domain
+    }
 
+    state.pageType = window.LL_ADAPTER.pageType || "search";
     const items = window.LL_ADAPTER.extract();
-    if (!items.length) return;
+
+    if (!items.length) {
+      // Search: an empty extraction usually means this isn't actually a results page — stay
+      // silent (F2). Product: the adapter matched this URL but found no bullets/specs/reviews
+      // (likely an unrecognized PDP layout) — show the bar so a failure is visible, not silent.
+      if (state.pageType !== "product") return;
+      state.bar = buildBar();
+      setSummary("Couldn't find supported sections on this page.");
+      console.warn("IntentLink: product adapter matched the URL but extracted 0 items");
+      return;
+    }
 
     state.items = items;
     state.nodesById = new Map(
@@ -240,6 +399,7 @@
     state.bar = buildBar();
 
     runReshape(intent);
+    watchForLazyReviews();
   }
 
   init();

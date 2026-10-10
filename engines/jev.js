@@ -1,29 +1,33 @@
 // Optional rank engine: TypeSafe Jev (System One model). One noul (yes/no probability)
 // question per item, in a single call. Jev cannot write prose, so the summary and reasons
 // are assembled in JS from parsed constraints (lib/filters.js) — same as the heuristic engine.
-// Implements the same rank(intent, items) contract as engines/llm.js.
+// Implements the same rank(intent, items, context) contract as engines/llm.js.
+//
+// Product-detail mode: Jev's per-item probability is a good fit for "is this page fact relevant
+// enough to highlight?" — unlike engines/llm.js (which returns score=1 for every kept id), Jev's
+// calibrated noul score drives the existing ll-keep (>=0.8) / ll-maybe (0.5-0.8) ring distinction
+// directly, so a single call doubles as both the keep/dim decision and the highlight strength.
 (function (global) {
   const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
   const KEEP_THRESHOLD = 0.5; // below this, item is dimmed; 0.5-0.8 is a "maybe" ring, >0.8 full keep
 
-  async function jev(intent, items) {
+  async function jev(intent, items, context = {}) {
     const apiKey = global.LL_CONFIG && global.LL_CONFIG.JEV_API_KEY;
     if (!apiKey) throw new Error("jev engine: missing JEV_API_KEY");
 
+    const isProduct = context.pageType === "product";
+
     const questions = {};
     for (const it of items) {
-      const bits = [`"${it.title}"`, `$${it.price}`];
-      if (it.rating != null) bits.push(`${it.rating}★`);
-      if (it.prime) bits.push("Prime");
-      questions[it.id] = {
-        type: "noul",
-        instructions: `Does this item (${bits.join(", ")}) match the shopper's intent: "${intent}"?`,
-      };
+      const instructions = isProduct
+        ? `Is this product fact strong evidence that the product matches the shopper's intent: "${intent}"? Fact: "${it.title}"`
+        : `Does this item ("${it.title}", $${it.price}${it.rating != null ? `, ${it.rating}★` : ""}${it.prime ? ", Prime" : ""}) match the shopper's intent: "${intent}"?`;
+      questions[it.id] = { type: "noul", instructions };
     }
 
     const requestBody = {
       model: "jev-latest",
-      state: { intent, itemCount: items.length },
+      state: { intent, itemCount: items.length, pageType: isProduct ? "product" : "search" },
       questions,
     };
 
@@ -68,7 +72,7 @@
 
     if (!answers) throw new Error("jev engine: empty response");
 
-    const filters = global.LL_FILTERS.parseConstraints(intent);
+    const filters = isProduct ? null : global.LL_FILTERS.parseConstraints(intent);
     const keep = [];
     for (const it of items) {
       if (it.sponsored) continue;
@@ -76,18 +80,32 @@
       if (typeof score !== "number" || score < KEEP_THRESHOLD) continue;
       if (!global.LL_FILTERS.passesFilters(it, filters)) continue;
 
-      const reasonBits = [];
-      if (it.price != null) reasonBits.push(`$${it.price}`);
-      if (it.rating != null) reasonBits.push(`${it.rating}★`);
-      if (it.prime) reasonBits.push("Prime");
-      keep.push({ id: it.id, reason: reasonBits.join(" · ") || "matches filters", score });
+      let reason;
+      if (isProduct) {
+        reason = it.title.length > 80 ? `${it.title.slice(0, 77)}…` : it.title;
+      } else {
+        const reasonBits = [];
+        if (it.price != null) reasonBits.push(`$${it.price}`);
+        if (it.rating != null) reasonBits.push(`${it.rating}★`);
+        if (it.prime) reasonBits.push("Prime");
+        reason = reasonBits.join(" · ") || "matches filters";
+      }
+      keep.push({ id: it.id, reason, score });
     }
 
-    const parts = [];
-    if (filters.priceMax != null) parts.push(`under $${filters.priceMax}`);
-    if (filters.ratingMin != null) parts.push(`${filters.ratingMin}★+`);
-    if (filters.prime) parts.push("Prime");
-    const summary = `${keep.length} of ${items.length} match${parts.length ? ": " + parts.join(", ") : ""}`;
+    // Highest-probability facts first, so a product-mode summary leads with the strongest evidence.
+    keep.sort((a, b) => b.score - a.score);
+
+    let summary;
+    if (isProduct) {
+      summary = keep.length ? keep.slice(0, 3).map((k) => k.reason).join(", ") : "no strong evidence found";
+    } else {
+      const parts = [];
+      if (filters.priceMax != null) parts.push(`under $${filters.priceMax}`);
+      if (filters.ratingMin != null) parts.push(`${filters.ratingMin}★+`);
+      if (filters.prime) parts.push("Prime");
+      summary = `${keep.length} of ${items.length} match${parts.length ? ": " + parts.join(", ") : ""}`;
+    }
 
     console.log(
       `%cIntentLink[jev] plan: ${keep.length}/${items.length} kept`,

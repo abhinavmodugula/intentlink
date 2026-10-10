@@ -1,0 +1,32 @@
+/* Layout for the synthesized facts panel (adapters/opentable-restaurant.js). The keep/dim/chip
+   coloring itself comes from the shared ll-keep/ll-dim/ll-chip classes in reshape.css — this file
+   only lays out the panel and its rows. */
+
+#ll-facts {
+  max-width: 720px;
+  margin: 12px auto 0;
+  padding: 0 16px 16px;
+  font-family: Arial, sans-serif;
+}
+
+.ll-fact-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: #f7f7f7;
+}
+
+.ll-fact-label {
+  flex: 0 0 110px;
+  font-weight: 700;
+  color: #333;
+  font-size: 13px;
+}
+
+.ll-fact-value {
+  flex: 1 1 auto;
+  color: #444;
+  font-size: 14px;
+}

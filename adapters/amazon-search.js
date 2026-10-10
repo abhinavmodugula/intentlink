@@ -1,6 +1,19 @@
 // Amazon search-results adapter (F4). Exposes window.LL_ADAPTER.
 // No model calls here — pure DOM extraction, tolerant of a couple of layout variants per field.
 (function () {
+  // Search and product-detail adapters share this content-script bundle and self-guard on
+  // mutually exclusive URL shapes, so only one of them ever registers window.LL_ADAPTER.
+  function isSearchPage() {
+    const path = location.pathname;
+    if (path === "/s" || path.startsWith("/s/")) return true;
+    try {
+      return new URLSearchParams(location.search).has("k");
+    } catch {
+      return false;
+    }
+  }
+  if (!isSearchPage()) return;
+
   const RESULT_SELECTOR = "[data-component-type='s-search-result']";
   const MAX_ITEMS = 30;
 
@@ -98,5 +111,6 @@
     extract,
     clutterSelectors: CLUTTER_SELECTORS,
     resultSelector: RESULT_SELECTOR,
+    pageType: "search",
   };
 })();

@@ -12,7 +12,9 @@
     "https://api.typesafe.ai/*",
     "*://*.amazon.com/*",
     "*://*.uniqlo.com/*",
-    "*://*.walmart.com/*"
+    "*://*.walmart.com/*",
+    "*://*.opentable.com/*",
+    "*://*.craigslist.org/*"
   ],
   "content_scripts": [
     {
@@ -42,6 +44,23 @@
         "lib/filters.js",
         "adapters/walmart-search.js",
         "adapters/walmart-product.js",
+        "content.js"
+      ],
+      "css": ["reshape.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.opentable.com/*"],
+      "js": ["lib/filters.js", "adapters/opentable-restaurant.js", "content.js"],
+      "css": ["reshape.css", "adapters/opentable.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.craigslist.org/*"],
+      "js": [
+        "lib/filters.js",
+        "adapters/craigslist-search.js",
+        "adapters/craigslist-posting.js",
         "content.js"
       ],
       "css": ["reshape.css"],

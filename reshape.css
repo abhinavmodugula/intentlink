@@ -16,22 +16,48 @@
   display: none !important;
 }
 
+/* Confident match: solid border + green fill, clearly more prominent than .ll-maybe. */
 .ll-keep {
   opacity: 1;
-  outline: 2px solid #2a7a4a;
-  outline-offset: 2px;
-  border-radius: 6px;
+  background: rgba(42, 122, 74, 0.1);
+  outline: 3px solid #2a7a4a;
+  outline-offset: 3px;
+  border-radius: 8px;
   position: relative;
   z-index: 1;
 }
 
+/* Borderline match: dashed border + faint amber tint, deliberately lighter-weight than .ll-keep. */
 .ll-maybe {
   opacity: 1;
+  background: rgba(201, 146, 43, 0.06);
   outline: 2px dashed #c9922b;
-  outline-offset: 2px;
-  border-radius: 6px;
+  outline-offset: 3px;
+  border-radius: 8px;
   position: relative;
   z-index: 1;
+}
+
+/* The single top-scoring kept item gets extra emphasis on top of .ll-keep. */
+.ll-best {
+  outline-width: 3px;
+  box-shadow: 0 0 0 5px rgba(42, 122, 74, 0.18);
+}
+
+.ll-best-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 8px 0;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: #2a7a4a;
+  color: #fff;
+  border-radius: 999px;
 }
 
 .ll-promote {
@@ -125,4 +151,19 @@
   font-size: 12px;
   color: #8291a3;
   font-variant-numeric: tabular-nums;
+}
+
+/* Pinned answer card (product pages only): the evidence for why this product was recommended. */
+#ll-answer {
+  position: sticky;
+  top: 45px; /* sits directly under the sticky #ll-bar */
+  z-index: 9998;
+  padding: 10px 16px;
+  background: #e8f3ec;
+  color: #1f5c38;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid #bfe0cc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
