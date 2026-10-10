@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "IntentLink",
+  "version": "0.1.0",
+  "description": "Carries a prompt from an agent chat into a real website and reshapes the page around it.",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "webNavigation"],
+  "host_permissions": [
+    "https://api.deepseek.com/*",
+    "https://api.typesafe.ai/*",
+    "*://*.amazon.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.amazon.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": ["lib/filters.js", "adapters/amazon.js", "content.js"],
+      "css": ["reshape.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

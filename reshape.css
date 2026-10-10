@@ -1,0 +1,128 @@
+/* IntentLink reshape classes (F7). Only toggles opacity/display + adds elements — never rewrites HTML. */
+
+[data-ll-id] {
+  transition: opacity 150ms ease-in-out, box-shadow 150ms ease-in-out;
+}
+
+.ll-pending {
+  opacity: 1;
+}
+
+.ll-dim {
+  opacity: 0.15;
+}
+
+.ll-hide {
+  display: none !important;
+}
+
+.ll-keep {
+  opacity: 1;
+  outline: 2px solid #2a7a4a;
+  outline-offset: 2px;
+  border-radius: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.ll-maybe {
+  opacity: 1;
+  outline: 2px dashed #c9922b;
+  outline-offset: 2px;
+  border-radius: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.ll-promote {
+  order: -1;
+}
+
+.ll-chip {
+  display: inline-block;
+  margin: 6px 0 0 0;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+  background: #e8f3ec;
+  color: #1f5c38;
+  border-radius: 999px;
+  border: 1px solid #bfe0cc;
+}
+
+/* Summary bar */
+#ll-bar {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #0f1720;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+#ll-bar .ll-summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#ll-bar .ll-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ll-spin 0.7s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes ll-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#ll-bar input.ll-refine {
+  flex: 0 0 220px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #3a4756;
+  background: #1a2531;
+  color: #fff;
+  font-size: 13px;
+}
+
+#ll-bar input.ll-refine::placeholder {
+  color: #8291a3;
+}
+
+#ll-bar button {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #3a4756;
+  background: #1a2531;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#ll-bar button:hover {
+  background: #243244;
+}
+
+#ll-bar .ll-latency {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: #8291a3;
+  font-variant-numeric: tabular-nums;
+}
