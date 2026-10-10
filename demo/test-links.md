@@ -69,6 +69,21 @@ verified against Uniqlo's search backend, so reuse this exact `q` value when tes
 https://www.uniqlo.com/us/en/search?q=mens%20shirts&queryRelaxationFlag=true#ll-intent=Comfortable%20mens%20shirts%20for%20everyday%20wear%2C%20soft%20breathable%20fabric%2C%20relaxed%20fit
 ```
 
+## Craigslist: Oakland apartment posting (product page)
+
+> Looking for an apartment with quartz countertops in the kitchen, an in-unit washer and dryer, and a walk-in closet
+
+A single posting instead of a search page: highlights the attrgroup tags and "Unit
+Amenities"/"Community Amenities" bullets that are evidence this listing matches the intent,
+right on the real page. Underlined (not outlined) on this site specifically — see
+`adapters/craigslist.css`.
+
+[Open on Craigslist, shaped for you](https://www.craigslist.org/view/d/oakland-or-higher-ceilings-throughout/jTDLXjwrLHDwFDwcX956yV#ll-intent=Looking%20for%20an%20apartment%20with%20quartz%20countertops%20in%20the%20kitchen%2C%20an%20in-unit%20washer%20and%20dryer%2C%20and%20a%20walk-in%20closet)
+
+```
+https://www.craigslist.org/view/d/oakland-or-higher-ceilings-throughout/jTDLXjwrLHDwFDwcX956yV#ll-intent=Looking%20for%20an%20apartment%20with%20quartz%20countertops%20in%20the%20kitchen%2C%20an%20in-unit%20washer%20and%20dryer%2C%20and%20a%20walk-in%20closet
+```
+
 ## Note on pass-1 filtering
 
 The regex in `lib/filters.js` only parses an upper price bound (`under $X`), a minimum star
