@@ -10,7 +10,9 @@
   "host_permissions": [
     "https://api.deepseek.com/*",
     "https://api.typesafe.ai/*",
-    "*://*.amazon.com/*"
+    "*://*.amazon.com/*",
+    "*://*.uniqlo.com/*",
+    "*://*.walmart.com/*"
   ],
   "content_scripts": [
     {
@@ -19,7 +21,29 @@
         "http://localhost/*",
         "http://127.0.0.1/*"
       ],
-      "js": ["lib/filters.js", "adapters/amazon.js", "content.js"],
+      "js": [
+        "lib/filters.js",
+        "adapters/amazon-search.js",
+        "adapters/amazon-product.js",
+        "content.js"
+      ],
+      "css": ["reshape.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.uniqlo.com/*"],
+      "js": ["lib/filters.js", "adapters/uniqlo-search.js", "content.js"],
+      "css": ["reshape.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.walmart.com/*"],
+      "js": [
+        "lib/filters.js",
+        "adapters/walmart-search.js",
+        "adapters/walmart-product.js",
+        "content.js"
+      ],
       "css": ["reshape.css"],
       "run_at": "document_idle"
     }

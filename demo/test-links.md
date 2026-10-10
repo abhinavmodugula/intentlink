@@ -15,37 +15,7 @@ for (const q of queries) {
 }'
 ```
 
-## 1. Office chair
-
-> Best ergonomic office chair for long coding sessions, under $300, breathable mesh, adjustable lumbar support
-
-[Open on Amazon, shaped for you](https://www.amazon.com/s?k=ergonomic+office+chair+mesh+lumbar+support#ll-intent=Best%20ergonomic%20office%20chair%20for%20long%20coding%20sessions%2C%20under%20%24300%2C%20breathable%20mesh%2C%20adjustable%20lumbar%20support)
-
-```
-https://www.amazon.com/s?k=ergonomic+office+chair+mesh+lumbar+support#ll-intent=Best%20ergonomic%20office%20chair%20for%20long%20coding%20sessions%2C%20under%20%24300%2C%20breathable%20mesh%2C%20adjustable%20lumbar%20support
-```
-
-## 2. Bookshelf
-
-> White bookshelf 18–22 inches wide, less than 10 inches deep, at least 5 shelves, under $120, with good reviews
-
-[Open on Amazon, shaped for you](https://www.amazon.com/s?k=white+bookshelf+5+shelves#ll-intent=White%20bookshelf%2018%E2%80%9322%20inches%20wide%2C%20less%20than%2010%20inches%20deep%2C%20at%20least%205%20shelves%2C%20under%20%24120%2C%20with%20good%20reviews)
-
-```
-https://www.amazon.com/s?k=white+bookshelf+5+shelves#ll-intent=White%20bookshelf%2018%E2%80%9322%20inches%20wide%2C%20less%20than%2010%20inches%20deep%2C%20at%20least%205%20shelves%2C%20under%20%24120%2C%20with%20good%20reviews
-```
-
-## 3. Headphones
-
-> Noise-cancelling headphones for commuting and flights, under $150, comfortable for 4+ hours
-
-[Open on Amazon, shaped for you](https://www.amazon.com/s?k=noise+cancelling+headphones#ll-intent=Noise-cancelling%20headphones%20for%20commuting%20and%20flights%2C%20under%20%24150%2C%20comfortable%20for%204%2B%20hours)
-
-```
-https://www.amazon.com/s?k=noise+cancelling+headphones#ll-intent=Noise-cancelling%20headphones%20for%20commuting%20and%20flights%2C%20under%20%24150%2C%20comfortable%20for%204%2B%20hours
-```
-
-## 4. Standing desk
+## Standing desk
 
 > Standing desk 48 inches wide, under $250, stable at maximum height, with memory presets
 
@@ -55,14 +25,46 @@ https://www.amazon.com/s?k=noise+cancelling+headphones#ll-intent=Noise-cancellin
 https://www.amazon.com/s?k=standing+desk+48+inch#ll-intent=Standing%20desk%2048%20inches%20wide%2C%20under%20%24250%2C%20stable%20at%20maximum%20height%2C%20with%20memory%20presets
 ```
 
-## 5. Carry-on suitcase
+## Product page: standing desk (recommended-product mode)
 
-> Carry-on suitcase under $150, lightweight, expandable, durable wheels, no common handle or zipper issues
+> Quiet standing desk, stable at full height, 48 inches wide
 
-[Open on Amazon, shaped for you](https://www.amazon.com/s?k=carry+on+suitcase+expandable#ll-intent=Carry-on%20suitcase%20under%20%24150%2C%20lightweight%2C%20expandable%2C%20durable%20wheels%2C%20no%20common%20handle%20or%20zipper%20issues)
+A single-product page instead of a search page: the extension highlights the feature
+bullets / spec rows / review snippets that are the evidence this product matches the
+intent, dims the rest, and pins a "Recommended because: …" card at the top. Swap in any
+real `/dp/<ASIN>` URL you have open.
 
 ```
-https://www.amazon.com/s?k=carry+on+suitcase+expandable#ll-intent=Carry-on%20suitcase%20under%20%24150%2C%20lightweight%2C%20expandable%2C%20durable%20wheels%2C%20no%20common%20handle%20or%20zipper%20issues
+https://www.amazon.com/dp/B0F8MHPVPH#ll-intent=Quiet%20standing%20desk%2C%20stable%20at%20full%20height%2C%2048%20inches%20wide
+```
+
+## Walmart: shoes (search)
+
+> Comfortable running shoes for flat feet, under $60, good arch support
+
+```
+https://www.walmart.com/search?q=shoes&action=SignIn&rm=true#ll-intent=Comfortable%20running%20shoes%20for%20flat%20feet%2C%20under%20%2460%2C%20good%20arch%20support
+```
+
+## Walmart: Avia sneakers (product page)
+
+> Lightweight athletic sneakers for all-day standing at work, breathable, under $40
+
+```
+https://www.walmart.com/ip/Avia-Men-s-5000-Athletic-Performance-Sneakers/15106815936?classType=VARIANT&athbdg=L1600&from=/search#ll-intent=Lightweight%20athletic%20sneakers%20for%20all-day%20standing%20at%20work%2C%20breathable%2C%20under%20%2440
+```
+
+## Uniqlo: mens shirts (search)
+
+> Comfortable mens shirts for everyday wear, soft breathable fabric, relaxed fit
+
+Only `q=mens%20shirts` is known to return results reliably — other query terms haven't been
+verified against Uniqlo's search backend, so reuse this exact `q` value when testing.
+
+[Open on Uniqlo, shaped for you](https://www.uniqlo.com/us/en/search?q=mens%20shirts&queryRelaxationFlag=true#ll-intent=Comfortable%20mens%20shirts%20for%20everyday%20wear%2C%20soft%20breathable%20fabric%2C%20relaxed%20fit)
+
+```
+https://www.uniqlo.com/us/en/search?q=mens%20shirts&queryRelaxationFlag=true#ll-intent=Comfortable%20mens%20shirts%20for%20everyday%20wear%2C%20soft%20breathable%20fabric%2C%20relaxed%20fit
 ```
 
 ## Note on pass-1 filtering
