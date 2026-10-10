@@ -1,0 +1,34 @@
+/* Craigslist-only override of the shared .ll-keep/.ll-maybe box style (reshape.css). Facts here
+   are tightly-packed <li> rows with little vertical spacing between them, so an outlined box
+   (plus its offset) overlaps the adjacent row above/below. An underline needs no box model, so
+   it can't collide regardless of line spacing — loaded after reshape.css in manifest.json so it
+   wins on specificity ties, and only injected on craigslist.org, so no other site is affected. */
+
+.ll-keep,
+.ll-maybe {
+  background: none;
+  outline: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.ll-keep {
+  text-decoration: underline;
+  text-decoration-color: #2a7a4a;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.ll-maybe {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: #c9922b;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.ll-best {
+  /* reshape.css adds a box-shadow glow ring here — same overlap risk as the outline, drop it.
+     The "Best match" badge above the text already marks this one out. */
+  box-shadow: none;
+}

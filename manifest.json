@@ -63,7 +63,7 @@
         "adapters/craigslist-posting.js",
         "content.js"
       ],
-      "css": ["reshape.css"],
+      "css": ["reshape.css", "adapters/craigslist.css"],
       "run_at": "document_idle"
     }
   ]

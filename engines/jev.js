@@ -94,7 +94,11 @@
 
       let reason;
       if (isProduct) {
-        reason = it.title.length > 80 ? `${it.title.slice(0, 77)}…` : it.title;
+        // Jev can't generate prose, and the fact's own on-page text already says what it says —
+        // echoing it.title back as a "reason" chip is pure duplication. Highlight color + the
+        // Best Match badge already communicate relevance; skip the chip (content.js's addChip
+        // no-ops on a falsy reason).
+        reason = "";
       } else {
         const reasonBits = [];
         if (it.price != null) reasonBits.push(`$${it.price}`);
@@ -102,7 +106,9 @@
         if (it.prime) reasonBits.push("Prime");
         reason = reasonBits.join(" · ") || "matches filters";
       }
-      keep.push({ id: it.id, reason, score });
+      // title kept alongside for the top-of-page summary line below (the one place a brief
+      // quote of the matched facts is useful, unlike the per-item chip) — stripped before return.
+      keep.push({ id: it.id, reason, score, _title: it.title });
     }
 
     // Highest-probability facts first, so a product-mode summary leads with the strongest evidence.
@@ -110,7 +116,12 @@
 
     let summary;
     if (isProduct) {
-      summary = keep.length ? keep.slice(0, 3).map((k) => k.reason).join(", ") : "no strong evidence found";
+      summary = keep.length
+        ? keep
+            .slice(0, 3)
+            .map((k) => (k._title.length > 60 ? `${k._title.slice(0, 57)}…` : k._title))
+            .join(", ")
+        : "no strong evidence found";
     } else {
       const parts = [];
       if (filters.priceMax != null) parts.push(`under $${filters.priceMax}`);
@@ -119,13 +130,15 @@
       summary = `${keep.length} of ${items.length} match${parts.length ? ": " + parts.join(", ") : ""}`;
     }
 
+    const cleanKeep = keep.map(({ id, reason, score }) => ({ id, reason, score }));
+
     console.log(
-      `%cIntentLink[jev] plan: ${keep.length}/${items.length} kept`,
+      `%cIntentLink[jev] plan: ${cleanKeep.length}/${items.length} kept`,
       "color:#2a7a4a;font-weight:bold",
-      { filters, summary, keep }
+      { filters, summary, keep: cleanKeep }
     );
 
-    return { filters, summary, keep };
+    return { filters, summary, keep: cleanKeep };
   }
 
   global.LL_ENGINES = global.LL_ENGINES || {};
