@@ -28,28 +28,47 @@ Rules:
       prime: it.prime,
     }));
 
+    const requestBody = {
+      model: "deepseek-chat",
+      response_format: { type: "json_object" },
+      temperature: 0,
+      max_tokens: 1200, // bounds JSON-mode output; ~30 items of short reasons fits comfortably
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: JSON.stringify({ intent, items: compactItems }) },
+      ],
+    };
+
+    console.group(`%cIntentLink[llm] request`, "color:#c9922b");
+    console.log("intent:", intent);
+    console.log("items sent:", compactItems);
+    console.groupEnd();
+
+    const t0 = performance.now();
     const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        response_format: { type: "json_object" },
-        temperature: 0,
-        max_tokens: 1200, // bounds JSON-mode output; ~30 items of short reasons fits comfortably
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: JSON.stringify({ intent, items: compactItems }) },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
+    const ms = Math.round(performance.now() - t0);
 
-    if (!res.ok) throw new Error(`llm engine: DeepSeek HTTP ${res.status}`);
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error(`IntentLink[llm] HTTP ${res.status} after ${ms}ms`, text);
+      throw new Error(`llm engine: DeepSeek HTTP ${res.status}`);
+    }
 
     const data = await res.json();
     const content = data?.choices?.[0]?.message?.content;
+
+    console.group(`%cIntentLink[llm] response (${ms}ms)`, "color:#2a7a4a");
+    console.log("raw response:", data);
+    console.log("content:", content);
+    console.groupEnd();
+
     if (!content) throw new Error("llm engine: empty response");
 
     const plan = JSON.parse(content);
@@ -57,6 +76,13 @@ Rules:
 
     // DeepSeek gives no calibrated per-item probability — every kept item is a full highlight.
     plan.keep = plan.keep.map((k) => ({ ...k, score: 1 }));
+
+    console.log(
+      `%cIntentLink[llm] plan: ${plan.keep.length}/${items.length} kept`,
+      "color:#2a7a4a;font-weight:bold",
+      plan
+    );
+
     return plan;
   }
 

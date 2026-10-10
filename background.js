@@ -65,29 +65,39 @@ function reCheckPlan(plan, items) {
 async function rank(intent, items, pageUrl) {
   const cacheKey = hashKey(intent + "|" + stripHash(pageUrl || ""));
   const config = self.LL_CONFIG || { RANK_ENGINE: "heuristic", DEMO_MODE: false };
+  console.log(`IntentLink: rank() intent="${intent}" items=${items.length} engine=${config.RANK_ENGINE} demoMode=${config.DEMO_MODE}`);
 
   if (config.DEMO_MODE) {
-    if (replayCache.has(cacheKey)) return replayCache.get(cacheKey);
+    if (replayCache.has(cacheKey)) {
+      console.log("IntentLink: demo mode cache hit", cacheKey);
+      return replayCache.get(cacheKey);
+    }
     // Demo mode never touches the network — heuristic is pure JS.
     const plan = reCheckPlan(await self.LL_ENGINES.heuristic(intent, items), items);
     replayCache.set(cacheKey, plan);
     return plan;
   }
 
-  if (replayCache.has(cacheKey)) return replayCache.get(cacheKey);
+  if (replayCache.has(cacheKey)) {
+    console.log("IntentLink: replay cache hit", cacheKey);
+    return replayCache.get(cacheKey);
+  }
 
   const engineName = config.RANK_ENGINE || "llm";
   const engine = self.LL_ENGINES[engineName] || self.LL_ENGINES.heuristic;
 
+  const t0 = performance.now();
   let plan;
   try {
     plan = await withTimeout(engine(intent, items), RANK_TIMEOUT_MS);
+    console.log(`IntentLink: ${engineName} engine succeeded in ${Math.round(performance.now() - t0)}ms`);
   } catch (err) {
-    console.warn(`IntentLink: ${engineName} engine failed (${err.message}), falling back to heuristic`);
+    console.warn(`IntentLink: ${engineName} engine failed after ${Math.round(performance.now() - t0)}ms (${err.message}), falling back to heuristic`);
     plan = await self.LL_ENGINES.heuristic(intent, items);
   }
 
   plan = reCheckPlan(plan, items);
+  console.log("IntentLink: final plan after F6 re-check", plan);
   replayCache.set(cacheKey, plan);
   return plan;
 }

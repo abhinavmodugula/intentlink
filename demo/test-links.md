@@ -19,6 +19,8 @@ for (const q of queries) {
 
 > Best ergonomic office chair for long coding sessions, under $300, breathable mesh, adjustable lumbar support
 
+[Open on Amazon, shaped for you](https://www.amazon.com/s?k=ergonomic+office+chair+mesh+lumbar+support#ll-intent=Best%20ergonomic%20office%20chair%20for%20long%20coding%20sessions%2C%20under%20%24300%2C%20breathable%20mesh%2C%20adjustable%20lumbar%20support)
+
 ```
 https://www.amazon.com/s?k=ergonomic+office+chair+mesh+lumbar+support#ll-intent=Best%20ergonomic%20office%20chair%20for%20long%20coding%20sessions%2C%20under%20%24300%2C%20breathable%20mesh%2C%20adjustable%20lumbar%20support
 ```
@@ -26,6 +28,8 @@ https://www.amazon.com/s?k=ergonomic+office+chair+mesh+lumbar+support#ll-intent=
 ## 2. Bookshelf
 
 > White bookshelf 18–22 inches wide, less than 10 inches deep, at least 5 shelves, under $120, with good reviews
+
+[Open on Amazon, shaped for you](https://www.amazon.com/s?k=white+bookshelf+5+shelves#ll-intent=White%20bookshelf%2018%E2%80%9322%20inches%20wide%2C%20less%20than%2010%20inches%20deep%2C%20at%20least%205%20shelves%2C%20under%20%24120%2C%20with%20good%20reviews)
 
 ```
 https://www.amazon.com/s?k=white+bookshelf+5+shelves#ll-intent=White%20bookshelf%2018%E2%80%9322%20inches%20wide%2C%20less%20than%2010%20inches%20deep%2C%20at%20least%205%20shelves%2C%20under%20%24120%2C%20with%20good%20reviews
@@ -35,6 +39,8 @@ https://www.amazon.com/s?k=white+bookshelf+5+shelves#ll-intent=White%20bookshelf
 
 > Noise-cancelling headphones for commuting and flights, under $150, comfortable for 4+ hours
 
+[Open on Amazon, shaped for you](https://www.amazon.com/s?k=noise+cancelling+headphones#ll-intent=Noise-cancelling%20headphones%20for%20commuting%20and%20flights%2C%20under%20%24150%2C%20comfortable%20for%204%2B%20hours)
+
 ```
 https://www.amazon.com/s?k=noise+cancelling+headphones#ll-intent=Noise-cancelling%20headphones%20for%20commuting%20and%20flights%2C%20under%20%24150%2C%20comfortable%20for%204%2B%20hours
 ```
@@ -43,6 +49,8 @@ https://www.amazon.com/s?k=noise+cancelling+headphones#ll-intent=Noise-cancellin
 
 > Standing desk 48 inches wide, under $250, stable at maximum height, with memory presets
 
+[Open on Amazon, shaped for you](https://www.amazon.com/s?k=standing+desk+48+inch#ll-intent=Standing%20desk%2048%20inches%20wide%2C%20under%20%24250%2C%20stable%20at%20maximum%20height%2C%20with%20memory%20presets)
+
 ```
 https://www.amazon.com/s?k=standing+desk+48+inch#ll-intent=Standing%20desk%2048%20inches%20wide%2C%20under%20%24250%2C%20stable%20at%20maximum%20height%2C%20with%20memory%20presets
 ```
@@ -50,6 +58,8 @@ https://www.amazon.com/s?k=standing+desk+48+inch#ll-intent=Standing%20desk%2048%
 ## 5. Carry-on suitcase
 
 > Carry-on suitcase under $150, lightweight, expandable, durable wheels, no common handle or zipper issues
+
+[Open on Amazon, shaped for you](https://www.amazon.com/s?k=carry+on+suitcase+expandable#ll-intent=Carry-on%20suitcase%20under%20%24150%2C%20lightweight%2C%20expandable%2C%20durable%20wheels%2C%20no%20common%20handle%20or%20zipper%20issues)
 
 ```
 https://www.amazon.com/s?k=carry+on+suitcase+expandable#ll-intent=Carry-on%20suitcase%20under%20%24150%2C%20lightweight%2C%20expandable%2C%20durable%20wheels%2C%20no%20common%20handle%20or%20zipper%20issues
