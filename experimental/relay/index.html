@@ -28,15 +28,9 @@
         <input
           id="intent-input"
           type="text"
-          placeholder="e.g. I want to use open-source models"
+          placeholder="e.g. Our launch is in two days and I'm worried the bot falls over under load"
           autocomplete="off"
         />
-        <div class="intent-chips">
-          <button class="chip" data-intent="I want to use open-source models">I want to use open-source models</button>
-          <button class="chip" data-intent="I'm a developer who specifically wants to use DeepSeek models">Dev: I want to use DeepSeek</button>
-          <button class="chip" data-intent="CFO, our LLM bill tripled last month, justify the spend">CFO: our bill tripled</button>
-          <button class="chip" data-intent="procurement, need SOC2 and contract terms">Procurement: SOC2 + terms</button>
-        </div>
       </div>
 
       <div class="status-row">
@@ -49,16 +43,17 @@
     </div>
   </section>
 
-  <main>
-    <section id="features" class="features-section">
+  <main class="split-layout">
+    <section id="features" class="features-col">
       <h2 class="section-title">Features</h2>
       <div id="features-grid" class="features-grid"></div>
     </section>
 
-    <section id="spotlight" class="spotlight-section">
+    <section id="spotlight" class="spotlight-col">
       <h2 class="section-title">Get specific</h2>
-      <div class="spotlight-layout">
-        <div id="spotlight-tabs" class="spotlight-tabs"></div>
+      <div id="spotlight-tabs" class="spotlight-tabs"></div>
+      <div class="spotlight-panel-wrap">
+        <div id="spot-best-badge" class="spot-best-badge"></div>
         <div id="spotlight-panel" class="spotlight-panel"></div>
       </div>
     </section>
@@ -69,6 +64,14 @@
       <span>Relay is a fictional product built for an internal demo of persona-adaptive layout. Not a real company.</span>
     </div>
   </footer>
+
+  <div id="debug-panel" class="debug-panel">
+    <div class="debug-panel-head">
+      <span>Jev noul scores</span>
+      <button id="debug-panel-close" class="debug-panel-close" aria-label="Hide">×</button>
+    </div>
+    <div id="debug-panel-body" class="debug-panel-body"></div>
+  </div>
 
   <script src="cards.js"></script>
   <script src="spotlight.js"></script>

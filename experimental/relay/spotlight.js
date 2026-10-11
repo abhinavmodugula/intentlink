@@ -102,6 +102,57 @@ print("answer:", msg.content)</pre>
     `,
   },
   {
+    id: "reliability-playbook",
+    label: "Survive a launch-day spike",
+    summary: "An exact runbook for configuring automatic provider fallback, burst rate limits, and uptime alerts before a high-traffic launch — for a team worried about the product falling over under load.",
+    render: () => `
+      <h3>Before you launch: a failover runbook</h3>
+      <p class="spot-sub">Relay's routing layer can absorb a provider outage or a traffic spike automatically — if it's configured before launch day, not during it.</p>
+
+      <div class="code-block">
+        <div class="code-head"><span>Set a fallback chain</span><button class="copy-btn" data-copy="curl-routing">Copy</button></div>
+        <pre id="curl-routing">curl -X PATCH https://api.relay.dev/v1/routing-policy \\
+  -H "Authorization: Bearer $RELAY_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "providers": ["anthropic", "openai", "fireworks"],
+    "failover_on": ["timeout", "429", "500-599"],
+    "timeout_ms": 8000,
+    "max_retries": 2
+  }'</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>Raise your burst limit for launch day</span><button class="copy-btn" data-copy="curl-burst">Copy</button></div>
+        <pre id="curl-burst">curl -X PATCH https://api.relay.dev/v1/keys/$KEY_ID/limits \\
+  -H "Authorization: Bearer $RELAY_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "requests_per_minute": 6000, "burst_multiplier": 3 }'</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span>Alert if p95 latency spikes</span><button class="copy-btn" data-copy="curl-alert">Copy</button></div>
+        <pre id="curl-alert">curl -X POST https://api.relay.dev/v1/alerts \\
+  -H "Authorization: Bearer $RELAY_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "metric": "p95_latency_ms",
+    "threshold": 4000,
+    "window_minutes": 5,
+    "webhook_url": "https://hooks.slack.com/services/..."
+  }'</pre>
+      </div>
+
+      <p class="spot-sub">Checklist, 48 hours out:</p>
+      <ul class="checklist">
+        <li>Fallback chain set with at least 2 providers behind your primary — a single-provider setup has no failover.</li>
+        <li>Burst limit raised above your expected peak RPM, not your average RPM.</li>
+        <li>A latency alert wired to a channel someone is actually watching during the launch window.</li>
+        <li>A dry run against a staging key to confirm failover actually triggers on a forced timeout.</li>
+      </ul>
+    `,
+  },
+  {
     id: "pricing-breakdown",
     label: "Pricing & cost comparison",
     summary: "Exact per-token pricing and a worked monthly bill comparison against per-seat Claude Code and Cursor pricing — for a CFO reviewing why the LLM bill changed.",

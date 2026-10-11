@@ -122,4 +122,104 @@ window.RELAY_CARDS = [
       { id: "finance", blurb: "SOC 2 Type II report available under NDA for procurement review; standard data-processing addendum provided." },
     ],
   },
+  {
+    id: "multimodal",
+    title: "Vision & multi-modal input",
+    icon: "🖼️",
+    summary: "Send images, PDFs, and audio alongside text to any model that supports multi-modal input, through the same endpoint.",
+    variants: [
+      { id: "dev", blurb: "Pass base64 images or a PDF URL in the same messages array — no separate vision endpoint or SDK to learn." },
+      { id: "finance", blurb: "One contract covers text, vision, and audio models — no separate multi-modal vendor line item to negotiate." },
+    ],
+  },
+  {
+    id: "fine-tuning",
+    title: "Fine-tuning & embeddings",
+    icon: "🧬",
+    summary: "Upload a dataset to fine-tune supported open-weight models, plus a dedicated embeddings endpoint for retrieval.",
+    variants: [
+      { id: "dev", blurb: "Kick off a fine-tune job via API, poll status, then call the resulting model by its returned ID like any other model." },
+      { id: "finance", blurb: "Fine-tuned model hosting is billed per-token like any other model — no separate GPU-hour hosting invoice." },
+    ],
+  },
+  {
+    id: "batch-api",
+    title: "Batch API for bulk jobs",
+    icon: "📦",
+    summary: "Submit thousands of requests as a batch job for asynchronous processing at a discounted per-token rate.",
+    variants: [
+      { id: "dev", blurb: "Upload a JSONL file of requests, get a job ID, poll for the completed output — no queue to build or manage." },
+      { id: "finance", blurb: "Batch jobs run at roughly half the synchronous rate — a free lever for cost-insensitive bulk work like labeling." },
+    ],
+  },
+  {
+    id: "observability",
+    title: "Observability & tracing",
+    icon: "🔍",
+    summary: "Every request is logged with full prompt/response, latency, and cost, searchable and exportable as traces.",
+    variants: [
+      { id: "dev", blurb: "Every request gets a trace ID you can pull via API to debug a bad completion days after the fact." },
+      { id: "finance", blurb: "Per-request cost attribution means spend can be traced to a specific feature or customer, not just a team total." },
+    ],
+  },
+  {
+    id: "workspaces-sso",
+    title: "Team workspaces & SSO",
+    icon: "🏢",
+    summary: "Organize API keys into workspaces per team or project, with SAML/SSO and role-based access control.",
+    variants: [
+      { id: "dev", blurb: "Scope a key to a workspace so a bug in one service can't burn another team's budget or touch their data." },
+      { id: "finance", blurb: "SSO and role-based access satisfy IT's offboarding and access-review requirements without manual key rotation." },
+    ],
+  },
+  {
+    id: "usage-alerts",
+    title: "Usage alerts & webhooks",
+    icon: "🔔",
+    summary: "Configurable webhooks and email/Slack alerts fire when spend, error rate, or latency cross a set threshold.",
+    variants: [
+      { id: "dev", blurb: "A webhook POSTs to your endpoint the moment a key crosses a threshold — wire it into PagerDuty or Slack in minutes." },
+      { id: "finance", blurb: "An alert at 50/80/100% of monthly budget means nobody learns about overspend by reading the invoice." },
+    ],
+  },
+  {
+    id: "data-residency",
+    title: "Regional data residency",
+    icon: "🌍",
+    summary: "Route requests to EU- or US-only infrastructure and model providers to satisfy regional data-residency requirements.",
+    variants: [
+      { id: "dev", blurb: "Set a region flag per workspace; requests only route to providers with infrastructure in that region." },
+      { id: "finance", blurb: "EU-only routing is often the difference between closing a deal with a European customer and not." },
+    ],
+  },
+  {
+    id: "byok",
+    title: "Bring your own provider keys",
+    icon: "🔑",
+    summary: "Use your own existing contracts and API keys with specific providers while still getting Relay's unified API and routing.",
+    variants: [
+      { id: "dev", blurb: "Attach your own provider API key in the dashboard; Relay routes through it instead of pooled capacity for that model." },
+      { id: "finance", blurb: "Honor an existing enterprise agreement with a provider while still getting one unified bill for everything else." },
+    ],
+  },
+  {
+    id: "enterprise-sla",
+    title: "Enterprise support & SLA",
+    icon: "🤝",
+    summary: "Dedicated Slack channel, 1-hour response SLA, and a named solutions engineer for enterprise accounts.",
+    variants: [
+      { id: "dev", blurb: "A shared Slack channel with actual engineers means a production incident doesn't wait on a ticket queue." },
+      { id: "finance", blurb: "A contractual 1-hour response SLA is often a procurement requirement before an enterprise deal can close." },
+    ],
+  },
+  {
+    id: "versioning",
+    title: "API versioning & stability",
+    icon: "🧱",
+    summary: "Pinned API versions and a 12-month deprecation window mean a provider-side model change never breaks your code without notice.",
+    variants: [
+      { id: "dev", blurb: "Pin a specific model snapshot so an upstream provider's silent update can't change your app's behavior overnight." },
+      { id: "finance", blurb: "A 12-month deprecation window means engineering time isn't spent firefighting breaking changes on someone else's schedule." },
+    ],
+  },
 ];

@@ -27,22 +27,38 @@ Open `http://localhost:8787`. The server does two things:
 
 ## The deck
 
-- `cards.js` — ~12 **Features** cards shared by every reader. Each has a neutral `summary`
-  (what Jev scores) and a `dev` / `finance` framing variant of the same fact.
-- `spotlight.js` — 3 **Spotlight** deep-dive panels with hyper-specific, hand-written payloads:
+- `cards.js` — **22 Features** cards shared by every reader, covering the breadth a real
+  LLM-gateway marketing site would have: unified API, routing & fallback, latency, streaming/
+  tool calls, OSS catalog, SDKs, pricing, spend analytics, budget controls, volume discounts,
+  reliability/SLA, compliance, multi-modal input, fine-tuning & embeddings, batch API,
+  observability/tracing, team workspaces & SSO, usage alerts, data residency, BYOK provider
+  keys, enterprise support, and API versioning. Each has a neutral `summary` (what Jev scores)
+  and a `dev` / `finance` framing variant of the same fact.
+- `spotlight.js` — **5 Spotlight** deep-dive panels with hyper-specific, hand-written payloads:
   - `oss-commands` — exact curl/Python snippets for calling open-weight models (Llama, Mixtral,
     Qwen, DeepSeek) through the gateway, in general.
   - `deepseek-tutorial` — a hyper-specific tutorial for a developer who wants *DeepSeek*
     specifically: `deepseek-chat` (V3) vs `deepseek-reasoner` (R1), the R1-only
     `reasoning_content` field, and DeepSeek-specific notes (ignored sampling params on R1,
-    prompt caching passthrough). Written to be distinct enough from `oss-commands` that Jev's
-    relevance scoring picks this one over the generic OSS panel for a DeepSeek-specific intent.
+    prompt caching passthrough).
+  - `reliability-playbook` — an exact pre-launch runbook: the API call that sets a provider
+    fallback chain, raises a burst rate limit, and wires a latency alert — a concrete
+    demonstration of the routing feature, not just a description of it.
   - `pricing-breakdown` — an exact per-token pricing table plus a worked monthly-bill
     comparison against per-seat Claude Code / Cursor pricing (illustrative figures, labeled as
     such — not a real benchmark from Anthropic or Cursor).
   - `compliance-dive` — SOC2/procurement checklist.
 
 Nothing in either file is written or rewritten by Jev. All text is static.
+
+### Why the example intents are scenarios, not keywords
+
+The hero's example chips are deliberately **abstract scenarios** ("Finance pinged me about
+last month's AI bill", "Legal won't let us sign until they see our data handling story") rather
+than restatements of a card's title ("I want to use open-source models" → the open-source
+catalog card). A query that echoes the card text proves keyword matching, not reasoning — the
+demo only shows Jev's actual value when the intent and the card summary share no vocabulary and
+the relevance link has to be inferred.
 
 ## The Jev question schema
 
@@ -77,15 +93,13 @@ and `content.js`'s `ll-keep`/`ll-maybe` bands), split into one more tier for a 4
 
 ## Try it
 
-- `I want to use open-source models` → Features reorder to lead with the API/routing/catalog
-  cards in dev framing; the Spotlight expands `oss-commands`.
-- `I'm a developer who specifically wants to use DeepSeek models` → same Features reorder, but
-  the Spotlight expands `deepseek-tutorial` instead of the generic `oss-commands` — the exact
-  DeepSeek tutorial (deepseek-chat vs deepseek-reasoner, `reasoning_content`, prompt caching).
-- `CFO, our LLM bill tripled last month, justify the spend` → Features reorder to lead with
-  pricing/spend-analytics/budget-controls in finance framing; the Spotlight expands
-  `pricing-breakdown` with the cost chart.
-- Toggle "Show Jev probabilities" to see the raw `noul` score behind each card's band.
+There's no example-chip UI on the page anymore — the hero is just the input box. To demo,
+either type an intent live, or use **`demo-links.md`**: five ready-made links in the same
+`#ll-intent=` IntentLink format the main repo's `demo/test-links.md` uses. The page reads the
+hash on load, fills the box, and fires the same Jev call a keystroke would — so a link is just
+a bookmarked keystroke, not a different code path.
+
+Toggle "Show Jev probabilities" to see the raw `noul` score behind each card's band.
 
 The brand, nav, hero, and footer never change between personas — only emphasis, order,
 framing, and the Spotlight payload do.

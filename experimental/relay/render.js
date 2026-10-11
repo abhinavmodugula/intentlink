@@ -4,14 +4,20 @@
   const grid = document.getElementById("features-grid");
   const spotTabs = document.getElementById("spotlight-tabs");
   const spotPanel = document.getElementById("spotlight-panel");
+  const spotPanelWrap = document.querySelector(".spotlight-panel-wrap");
+  const bestBadge = document.getElementById("spot-best-badge");
   const statusEl = document.getElementById("jev-status");
   const debugToggle = document.getElementById("debug-toggle");
   const intentInput = document.getElementById("intent-input");
+  const debugPanel = document.getElementById("debug-panel");
+  const debugPanelBody = document.getElementById("debug-panel-body");
+  const debugPanelClose = document.getElementById("debug-panel-close");
 
   const cards = window.RELAY_CARDS;
   const spotlight = window.RELAY_SPOTLIGHT;
   let debugOn = false;
   let currentSpotlightId = spotlight[0]?.id ?? null;
+  let lastLayout = null; // most recent computeLayout() result, used to re-check "best match" on manual tab clicks
 
   function cardNode(card) {
     const el = document.createElement("div");
@@ -42,6 +48,10 @@
     tab.addEventListener("click", () => {
       currentSpotlightId = panel.id;
       renderSpotlight(panel.id, true);
+      const hasIntent = !!intentInput.value.trim();
+      const isJevPick = !!lastLayout && lastLayout.spotlightId === panel.id;
+      const score = isJevPick ? lastLayout.scores?.[`spot:${panel.id}:rel`] : null;
+      updateBestBadge(score, !(hasIntent && isJevPick));
     });
     spotTabs.appendChild(tab);
   }
@@ -76,6 +86,40 @@
         });
       }
     }
+  }
+
+  function updateBestBadge(score, isDefault) {
+    spotPanelWrap.classList.toggle("is-best", !isDefault);
+    bestBadge.classList.toggle("is-best", !isDefault);
+    if (isDefault) {
+      bestBadge.innerHTML = `<span class="badge-star">○</span> Default view — type an intent to let Jev pick`;
+    } else {
+      const scoreText = typeof score === "number" ? `noul ${score.toFixed(2)}` : "";
+      bestBadge.innerHTML = `<span class="badge-star">★</span> Jev's best match for your intent<span class="badge-score">${scoreText}</span>`;
+    }
+  }
+
+  function renderDebugScores(scores) {
+    if (!scores) {
+      debugPanelBody.innerHTML = `<div class="debug-panel-empty">No Jev call yet — type an intent.</div>`;
+      return;
+    }
+    const rows = Object.entries(scores)
+      .filter(([, v]) => typeof v === "number")
+      .sort((a, b) => b[1] - a[1]);
+    debugPanelBody.innerHTML = rows
+      .map(
+        ([key, value]) => `
+          <div class="debug-row">
+            <span class="debug-row-key" title="${key}">
+              ${key}
+              <span class="debug-row-bar-track"></span>
+              <span class="debug-row-bar-fill" style="width:${Math.round(value * 100)}%"></span>
+            </span>
+            <span class="debug-row-value">${value.toFixed(2)}</span>
+          </div>`
+      )
+      .join("");
   }
 
   function renderSpotlight(panelId, animate) {
@@ -174,12 +218,17 @@
     }
     if (!layout || myToken !== requestToken) return; // superseded by a newer keystroke
 
+    lastLayout = layout;
     applyLayout(layout);
+    const hasIntent = !!intent.trim();
     if (layout.spotlightId && layout.spotlightId !== currentSpotlightId) {
       currentSpotlightId = layout.spotlightId;
       renderSpotlight(layout.spotlightId, true);
     }
-    statusEl.textContent = intent.trim() ? "Layout reflects your intent" : "Showing default layout";
+    const bestScore = hasIntent ? layout.scores?.[`spot:${currentSpotlightId}:rel`] : null;
+    updateBestBadge(bestScore, !hasIntent);
+    renderDebugScores(layout.scores ?? null);
+    statusEl.textContent = hasIntent ? "Layout reflects your intent" : "Showing default layout";
     statusEl.classList.remove("loading");
   }
 
@@ -189,26 +238,41 @@
     debounceTimer = setTimeout(recompute, 300);
   });
 
-  document.querySelectorAll(".chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      intentInput.value = chip.dataset.intent;
-      intentInput.focus();
-      clearTimeout(debounceTimer);
-      recompute();
-    });
-  });
+  // IntentLink-style deep link, same convention as the extension's #ll-intent (see
+  // demo/test-links.md): https://.../#ll-intent=<encoded intent>. Read once on load.
+  function intentFromHash() {
+    const match = location.hash.match(/#ll-intent=(.+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  }
 
   debugToggle.addEventListener("change", () => {
     debugOn = debugToggle.checked;
     document.querySelectorAll(".feature-score").forEach((el) => {
       el.classList.toggle("visible", debugOn && el.textContent !== "");
     });
+    debugPanel.classList.toggle("visible", debugOn);
+    if (debugOn) renderDebugScores(lastLayout?.scores ?? null);
   });
 
-  // Initial render: default layout, no Jev call.
+  debugPanelClose.addEventListener("click", () => {
+    debugToggle.checked = false;
+    debugOn = false;
+    debugPanel.classList.remove("visible");
+    document.querySelectorAll(".feature-score").forEach((el) => el.classList.remove("visible"));
+  });
+
   (async function init() {
+    const hashIntent = intentFromHash();
+    if (hashIntent) {
+      intentInput.value = hashIntent;
+      await recompute();
+      return;
+    }
+    // No #ll-intent in the URL: default layout, no Jev call.
     const layout = await window.RelayEngine.computeLayout("", cards, spotlight);
     applyLayout(layout);
     renderSpotlight(currentSpotlightId, false);
+    updateBestBadge(null, true);
+    renderDebugScores(null);
   })();
 })();
