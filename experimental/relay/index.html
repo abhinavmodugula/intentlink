@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Relay — one API for every model</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="shell-header">
+    <div class="shell-header-inner">
+      <div class="brand"><span class="brand-mark">◈</span> Relay</div>
+      <nav class="shell-nav">
+        <a href="#features">Features</a>
+        <a href="#spotlight">Docs</a>
+        <a href="#" class="nav-cta">Get API key</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <h1>One API. Every model. Your price.</h1>
+      <p class="hero-sub">Route to 300+ models — including open-source — through a single OpenAI-compatible endpoint.</p>
+
+      <div class="intent-box">
+        <label for="intent-input" class="intent-label">Tell Relay what you're trying to do</label>
+        <input
+          id="intent-input"
+          type="text"
+          placeholder="e.g. I want to use open-source models"
+          autocomplete="off"
+        />
+        <div class="intent-chips">
+          <button class="chip" data-intent="I want to use open-source models">I want to use open-source models</button>
+          <button class="chip" data-intent="I'm a developer who specifically wants to use DeepSeek models">Dev: I want to use DeepSeek</button>
+          <button class="chip" data-intent="CFO, our LLM bill tripled last month, justify the spend">CFO: our bill tripled</button>
+          <button class="chip" data-intent="procurement, need SOC2 and contract terms">Procurement: SOC2 + terms</button>
+        </div>
+      </div>
+
+      <div class="status-row">
+        <span id="jev-status" class="jev-status">Showing default layout</span>
+        <label class="debug-toggle">
+          <input type="checkbox" id="debug-toggle" />
+          Show Jev probabilities
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section id="features" class="features-section">
+      <h2 class="section-title">Features</h2>
+      <div id="features-grid" class="features-grid"></div>
+    </section>
+
+    <section id="spotlight" class="spotlight-section">
+      <h2 class="section-title">Get specific</h2>
+      <div class="spotlight-layout">
+        <div id="spotlight-tabs" class="spotlight-tabs"></div>
+        <div id="spotlight-panel" class="spotlight-panel"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell-footer">
+    <div class="shell-footer-inner">
+      <span>Relay is a fictional product built for an internal demo of persona-adaptive layout. Not a real company.</span>
+    </div>
+  </footer>
+
+  <script src="cards.js"></script>
+  <script src="spotlight.js"></script>
+  <script src="jev.js"></script>
+  <script src="engine.js"></script>
+  <script src="render.js"></script>
+</body>
+</html>
