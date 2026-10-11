@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IntentLink — Architecture</title>
+<style>
+  :root {
+    --green: #2a7a4a;
+    --green-tint: #e8f3ec;
+    --amber: #c9922b;
+    --amber-tint: #fbf1e1;
+    --ink: #1a2531;
+    --sub: #5b6b7c;
+    --line: #e3e8ec;
+    --bg: #fafbfc;
+    --card: #ffffff;
+    --code-bg: #0f1720;
+    --code-ink: #d7e3ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  header.hero {
+    margin-bottom: 48px;
+  }
+  header.hero .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-tint);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header.hero h1 {
+    font-size: 36px;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  header.hero p.tagline {
+    font-size: 17px;
+    color: var(--sub);
+    max-width: 640px;
+    margin: 0;
+  }
+
+  section {
+    margin: 56px 0;
+  }
+  section > h2 {
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+  section > p.lede {
+    color: var(--sub);
+    margin: 0 0 24px;
+    max-width: 700px;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0;
+  }
+  .flow-step {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    flex: 1 1 150px;
+    min-width: 150px;
+  }
+  .flow-step .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .flow-step h3 {
+    font-size: 14px;
+    margin: 0 0 6px;
+  }
+  .flow-step p {
+    font-size: 13px;
+    color: var(--sub);
+    margin: 0;
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    color: var(--sub);
+    font-size: 18px;
+    flex: 0 0 auto;
+  }
+  @media (max-width: 720px) {
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); padding: 4px 0; }
+  }
+
+  /* Cards grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card p {
+    font-size: 13.5px;
+    color: var(--sub);
+    margin: 0 0 8px;
+  }
+  .card p:last-child { margin-bottom: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .tag.default { background: var(--green-tint); color: var(--green); }
+  .tag.optional { background: var(--amber-tint); color: var(--amber); }
+  .tag.fallback { background: #eef0f3; color: var(--sub); }
+
+  /* Code block */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 16px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .inline-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: #eef0f3;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.9em;
+  }
+  .url-anatomy {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 18px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .url-anatomy .site { color: #7fb8e8; }
+  .url-anatomy .frag { color: #f0b86e; }
+  .url-anatomy .intent { color: #8fd4a8; }
+
+  /* Adapter table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    background: #f4f6f8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sub);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.site { font-weight: 600; white-space: nowrap; }
+  td .mini { color: var(--sub); font-size: 12.5px; }
+
+  /* Guard rails list */
+  .rails { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .rails li {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--green);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+  }
+  .rails li b { color: var(--ink); }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--sub);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e7edf2;
+      --sub: #9aabbb;
+      --line: #263141;
+      --bg: #0b121a;
+      --card: #121b26;
+      --green-tint: #11261b;
+      --amber-tint: #2a2112;
+      --code-bg: #060a0f;
+    }
+    th { background: #0e1620; }
+    .inline-code { background: #1c2733; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">IntentLink — Architecture</span>
+    <h1>A chat prompt becomes a reshaped page</h1>
+    <p class="tagline">
+      One Chrome extension, a per-site adapter for each store, and a swappable rank engine
+      (DeepSeek, Jev, or a zero-network fallback) that decides what to highlight. No chat UI of
+      its own, no backend server — the chat is whatever you already use.
+    </p>
+  </header>
+
+  <section>
+    <h2>The end-to-end flow</h2>
+    <p class="lede">From a typed request to a reshaped page, in six steps.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <span class="num">1</span>
+        <h3>User types intent</h3>
+        <p>In ChatGPT or Claude — "noise-cancelling headphones under $100, good for flights."</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="num">2</span>
+        <h3>Chat replies with a link</h3>
+        <p>A markdown link: the site's search URL plus the prompt in the URL fragment.</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="num">3</span>
+        <h3>Click opens the real site</h3>
+        <p>Chrome navigates normally. The fragment never reaches the site's server.</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="num">4</span>
+        <h3>Adapter extracts items</h3>
+        <p>A per-site content script reads ~20–30 results or facts straight from the DOM.</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="num">5</span>
+        <h3>Rank engine decides</h3>
+        <p>One call — DeepSeek, Jev, or a local fallback — returns keep/dim decisions.</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="num">6</span>
+        <h3>Page reshapes</h3>
+        <p>Matches highlighted, clutter dimmed/hidden — same page, same cart, same checkout.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>From ChatGPT to an IntentLink</h2>
+    <p class="lede">
+      No new syntax to learn, and no code on the chat side — a Custom GPT / Claude Project is
+      just given instructions for how to build the link. The intent is plain, URL-encoded natural
+      language in the fragment; there's no rigid schema to fill in.
+    </p>
+    <div class="url-anatomy"><span class="site">https://www.amazon.com/s?k=noise+cancelling+headphones</span><span class="frag">#ll-intent=</span><span class="intent">noise%20cancelling%20headphones%20under%20%24100%2C%20good%20for%20flights</span></div>
+    <p style="margin-top:14px; color:var(--sub); font-size:13.5px;">
+      <span style="color:var(--green); font-weight:600;">site URL</span> — built from the key
+      product words, so the page loads real results even before the extension does anything —
+      &nbsp;<span style="color:var(--amber); font-weight:600;">#ll-intent=</span> — the marker the
+      content script looks for — &nbsp;<span style="color:#1f8a52; font-weight:600;">encoded
+      intent</span> — the shopper's full original request, untouched.
+    </p>
+    <p class="lede" style="margin-top:20px;">The chat-side instructions, verbatim (<span class="inline-code">chat/gpt-instructions.md</span>):</p>
+    <pre><code>1. Pick the site (default amazon.com). Build its search URL from the key
+   product words: https://www.amazon.com/s?k=&lt;words joined by +&gt;
+   If the user pasted a product URL, use that URL instead.
+2. Append #ll-intent= followed by the user's full request, URL-encoded.
+3. Reply with one markdown link titled "Open on Amazon, shaped for you"
+   and nothing else.</code></pre>
+    <p class="lede" style="margin-top:16px;">
+      Because the intent lives in the URL <em>fragment</em> (everything after <span class="inline-code">#</span>),
+      it's never sent to the site's server — browsers simply don't transmit fragments in HTTP
+      requests. It's a client-side-only handoff by construction, not by policy.
+    </p>
+  </section>
+
+  <section>
+    <h2>Per-site adapters: precomputed, not guessed live</h2>
+    <p class="lede">
+      The PRD's original vision was a frontier model that compiles a site's selectors once,
+      automatically. What's actually running is the hand-verified version of that same idea: each
+      site gets a small adapter file that knows how to read <em>that</em> site's DOM — written
+      against real markup, not assumed, then committed and shipped with the extension. No model
+      call happens just to read a page; the only network call is the one rank() decision per
+      reshape.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Site</th><th>Shape</th><th>How the selectors were verified</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="site">Amazon</td>
+          <td>Search results + product page</td>
+          <td>Known, well-documented result/PDP structure; several selector fallbacks per field.</td>
+        </tr>
+        <tr>
+          <td class="site">Craigslist</td>
+          <td>Search results + posting</td>
+          <td>Fetched directly via <span class="inline-code">curl</span> — no bot-wall. Clean,
+            unhashed, hand-authored class names (<span class="inline-code">.cl-static-search-result</span>,
+            <span class="inline-code">.attrgroup .attr</span>) sampled across 360 live listings.</td>
+        </tr>
+        <tr>
+          <td class="site">OpenTable</td>
+          <td>Restaurant page</td>
+          <td>Blocked by Akamai for direct fetch — built on <span class="inline-code">schema.org
+            Restaurant</span> JSON-LD instead, which needs zero site-specific selectors at all.</td>
+        </tr>
+        <tr>
+          <td class="site">Uniqlo</td>
+          <td>Search results</td>
+          <td>Also Akamai-blocked. Calibrated by running a diagnostic snippet in the user's own
+            browser DevTools and iterating against the real, returned DOM signatures.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="lede" style="margin-top:16px;">
+      Every adapter exposes the same tiny contract — <span class="inline-code">window.LL_ADAPTER
+      = { extract(), clutterSelectors, pageType }</span> — so the rest of the pipeline
+      (two-pass reshape, rank dispatch, refine, reset, best-match promotion) is written once and
+      never has to know which site it's running on.
+    </p>
+  </section>
+
+  <section>
+    <h2>Rank engines — one contract, three implementations</h2>
+    <p class="lede">
+      Every engine implements <span class="inline-code">rank(intent, items) → {filters, summary, keep}</span>,
+      switched in one place. The page never waits on a model: an instant local pass runs first,
+      then whichever engine is active refines it.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="tag default">default</span>&nbsp; DeepSeek</h3>
+        <p>One JSON-mode chat completion. Given the schema and the extracted items, it returns
+          which ids to keep and a short reason for each — genuine generated prose.</p>
+        <p>No per-item confidence score, so every kept item renders as a full, confident highlight.</p>
+      </div>
+      <div class="card">
+        <h3><span class="tag optional">optional</span>&nbsp; Jev</h3>
+        <p>TypeSafe's "System One" model — one <span class="inline-code">noul</span> (calibrated
+          0–1 probability) question per item, answered in parallel in a single call.</p>
+        <p>The probability drives the highlight strength directly: ≥0.8 is a confident match,
+          0.3–0.8 a lighter "maybe," below that it's dimmed. Can't write prose, so reason text is
+          assembled from parsed constraints instead of model-generated phrases.</p>
+      </div>
+      <div class="card">
+        <h3><span class="tag fallback">fallback</span>&nbsp; Heuristic</h3>
+        <p>Pure JS — regex-parsed price/rating/prime constraints plus keyword overlap. No network
+          call at all.</p>
+        <p>Runs whenever a model call errors, times out past 4s, or <span class="inline-code">DEMO_MODE</span>
+          is on — guarantees the page never shows a blank or broken reshape.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What keeps this honest</h2>
+    <p class="lede">A handful of rules carried through every engine and every adapter:</p>
+    <ul class="rails">
+      <li><b>Deterministic re-check (F6).</b> After any engine returns, plain JS drops any kept
+        item that actually violates a parsed constraint (price, rating, Prime) — a model mistake
+        can never highlight something that breaks the shopper's own stated limit.</li>
+      <li><b>Two passes, same classes.</b> An instant, model-free pass dims clutter and provable
+        constraint failures the moment items are extracted; the model-refined pass only narrows
+        further. A slow or failed model call just leaves the instant pass's result standing.</li>
+      <li><b>One best match, always chosen from what already matched.</b> The top-scoring kept
+        item gets a badge and is promoted first — but it's picked from the plan's own keep list,
+        never overriding a filter to force a result.</li>
+      <li><b>The real page, never rewritten.</b> Reshaping only toggles CSS classes and adds small
+        UI (a summary bar, an answer card) — the site's own HTML, cart, and checkout are
+        untouched.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Built for The Living Internet Build Day at AGI House. See <span class="inline-code">IntentLink — PRD &amp; Design.pdf</span>
+    for the full spec, and <span class="inline-code">demo/test-links.md</span> for working examples
+    on every site above.
+  </footer>
+
+</div>
+</body>
+</html>
